@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Copy firmware to CIRCUITPY",
+            "type": "shell",
+            "command": "cp -rT firmware /run/media/mrtibbs/CIRCUITPY",
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
