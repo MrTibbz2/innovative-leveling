@@ -8,7 +8,7 @@ global BLE_ON
 BLE_ON = False
 def switch_bluetooth_status_indicator(connected: bool):
     BLE_ON = connected
-# Highlight constants (simulate enum)
+# Highlight constants enums dont exist in circuitpython, but i love enums C++ my goat
 HIGHLIGHT_NONE = -1
 HIGHLIGHT_TASK1 = 0
 HIGHLIGHT_TASK2 = 1
@@ -26,7 +26,7 @@ def change_highlighted():
     global _highlighted
     if _highlighted == HIGHLIGHT_NONE:
         _highlighted = HIGHLIGHT_TASK1
-    elif _highlighted == HIGHLIGHT_TASK1:
+    elif _highlighted == HIGHLIGHT_TASK1: #yes... pretty dumb I know. but it works.
         _highlighted = HIGHLIGHT_TASK2
     elif _highlighted == HIGHLIGHT_TASK2:
         _highlighted = HIGHLIGHT_ARROW_UP
@@ -35,20 +35,14 @@ def change_highlighted():
     elif _highlighted == HIGHLIGHT_ARROW_DOWN:
         _highlighted = HIGHLIGHT_NONE
 
-# Colors for normal and highlighted states
-COLOR_TASK_BG = 0x222233  # Darker
-COLOR_TASK_HIGHLIGHT = 0x416080  # Light blue
+# Colors when stuff is selected
+COLOR_TASK_BG = 0x222233  
+COLOR_TASK_HIGHLIGHT = 0x416080  
 COLOR_ARROW_BG = 0x222233
 COLOR_ARROW_HIGHLIGHT = 0xAACCFF
 COLOR_OUTLINE = 0x545C5E
-COLOR_OUTLINE_HIGHLIGHT = 0xFFFF00  # Bright yellow
+COLOR_OUTLINE_HIGHLIGHT = 0xFFFF00  # if you wanna know what this colour is, then look at a colour picker dumbass
 
-# Example usage in your draw function:
-# if get_highlighted() == HIGHLIGHT_TASK1:
-#     use COLOR_TASK_HIGHLIGHT and COLOR_OUTLINE_HIGHLIGHT for task1
-# else:
-#     use COLOR_TASK_BG and COLOR_OUTLINE for task1
-# ...repeat for other items...
 
 def thick_outline_rect(x, y, width, height, color, thickness=1, fill=None):
     """
@@ -65,7 +59,7 @@ def thick_outline_rect(x, y, width, height, color, thickness=1, fill=None):
     group.append(rect)
     return group
 
-def draw_arrow(x, y, direction="up", color=0xFFFFFF, size=32):
+def draw_arrow(x: int, y: int, direction="up", color=0xFFFFFF, size=32) -> displayio.Group:
     """
     Returns a displayio.Group containing a triangle and a rect to form an arrow.
     Args:
@@ -111,7 +105,7 @@ def setup_ui() -> displayio.Group:
     main_group.append(title)
     # BLE indicator
     ble_indicator = displayio.Group(x=239-105, y=0)
-    ble_color = 0x00FF00 if BLE_ON else 0xFF0000  # Green if connected, red if not
+    ble_color = 0x00FF00 if BLE_ON else 0xFF0000  # Green if connected, red if not. man i love ternary operators
     ble_rect = Rect(x=75, y=0, width=20, height=20, fill=ble_color)
     ble_indicator.append(ble_rect)
     ble_label = label.Label(terminalio.FONT, text="BLE status:", color=0xAAAAAA, x=0, y=10, scale=1)

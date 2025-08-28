@@ -11,8 +11,10 @@ async def main():
 	await ble.send_json({"hello": "from PC"})
 
 	# Keep running to receive notifications
-	await asyncio.sleep(5)
-
-	await ble.disconnect()
+	while True:
+		msg = await ble.receive_json()
+		if msg:
+			print("Received:", msg)
+		await asyncio.sleep(0.1)
 
 asyncio.run(main())

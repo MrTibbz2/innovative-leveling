@@ -19,9 +19,9 @@ def check_and_switch_highlighted():
         libs.ui.change_highlighted()
         print(f"Button A pressed, switched highlighted to {libs.ui.get_highlighted()}")
     _last_a_state = clue.button_a
-# On startup, load tasks from PC if available
-# On sync, overwrite tasks with incoming ones
-def clue_main():
+
+def clue_main(): # update loop, ALMOST as slow as turtle but not quite.
+
     last_highlight = libs.ui.get_highlighted()
     libs.ui.show_ui(libs.ui.setup_ui())
     while True:
@@ -30,10 +30,11 @@ def clue_main():
         current_highlight = libs.ui.get_highlighted()
         if current_highlight != prev_highlight:
             print(f"Highlight changed to {current_highlight}, redrawing UI")
-            libs.ui.show_ui(libs.ui.setup_ui())
+            libs.ui.show_ui(libs.ui.setup_ui()) # man i didnt know you could make a slower graphics library than turtle. 
+                                                # but to be fair, this has no hardware acceleration so...
         time.sleep(0.05)
         
 
 
 if __name__ == "__main__":
-    clue_main()
+    clue_main() # hi mr o'reagan!
