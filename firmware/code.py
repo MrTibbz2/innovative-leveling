@@ -1,15 +1,15 @@
+import libs.tasks
 import libs.bluetooth
-
 import time
+import libs.ui
+
+task_manager = libs.tasks.TaskManager()
 ble_manager = libs.bluetooth.BLEManager()
 
-while True:
-    # Auto reconnect handled internally
-    ble_manager.send_json({"temperature": 23, "humidity": 50})
+# On startup, load tasks from PC if available
+# On sync, overwrite tasks with incoming ones
+def clue_main():
+    libs.ui.show_ui(libs.ui.setup_ui())
 
-    incoming = ble_manager.receive_json()
-    if incoming:
-        
-        print("Received:", incoming)
-
-    time.sleep(2)
+if __name__ == "__main__":
+    clue_main()
