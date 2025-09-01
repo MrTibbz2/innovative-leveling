@@ -1,4 +1,4 @@
-import board, displayio, terminalio, digitalio
+import board, displayio, terminalio
 from adafruit_display_text import label
 from adafruit_display_shapes.rect import Rect
 import time
@@ -7,6 +7,7 @@ display = board.DISPLAY
 global BLE_ON
 BLE_ON = False
 def switch_bluetooth_status_indicator(connected: bool):
+    global BLE_ON
     BLE_ON = connected
 # Highlight constants enums dont exist in circuitpython, but i love enums C++ my goat
 HIGHLIGHT_NONE = -1

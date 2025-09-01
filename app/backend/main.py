@@ -2,7 +2,7 @@ import libs.bluetooth
 import asyncio
 
 
-ble = libs.bluetooth.BLEManager()  # Change name if needed
+ble = libs.bluetooth.BLEManager()  
 
 async def main():
 	await ble.connect()
