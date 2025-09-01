@@ -1,10 +1,8 @@
-import libs.tasks
 import libs.bluetooth
 
 import libs.ui
 from adafruit_clue import clue
 
-task_manager = libs.tasks.TaskManager()
 ble_manager = libs.bluetooth.BLEManager()
 
 
@@ -29,6 +27,10 @@ def clue_main(): # update loop, ALMOST as slow as turtle but not quite.
     last_highlight = libs.ui.get_highlighted()
     libs.ui.show_ui(libs.ui.setup_ui())
     while True:
+        jason = ble_manager.receive_json()
+        if jason is not None:
+            print("Received JSON:", jason)
+            
         if ble_manager.check_reconnect(): libs.ui.show_ui(libs.ui.setup_ui()) 
         prev_highlight = libs.ui.get_highlighted()
         check_and_switch_highlighted()
@@ -39,6 +41,7 @@ def clue_main(): # update loop, ALMOST as slow as turtle but not quite.
             # man i didnt know you could make a slower graphics library than turtle. 
             # but to be fair, this has no hardware acceleration so.. and it ran out of memory ages ago.
             # i personally think they should make the Applied computing class write their own graphics library
+            # every year for the game project, make everyone use last years shit graphics library
 
                                         
 
@@ -46,3 +49,4 @@ def clue_main(): # update loop, ALMOST as slow as turtle but not quite.
 
 if __name__ == "__main__":
     clue_main() # hi mr o'reagan!
+
