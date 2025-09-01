@@ -52,7 +52,7 @@ def thick_outline_rect(x, y, width, height, color, thickness=1, fill=None):
         x, y: Top-left corner
         width, height: Size
         color: Outline color
-        thickness: Outline thickness in pixels (ignored, always 1)
+        thickness: Outline thickness in pixels (ignored because ram exploded, always 1)
         fill: Fill color (None for transparent)
     """
     group = displayio.Group()
