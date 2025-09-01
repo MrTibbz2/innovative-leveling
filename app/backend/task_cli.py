@@ -1,7 +1,6 @@
-import datetime
 import json
-
-
+import libs.bluetooth 
+import asyncio
 class Task:
     def __init__(self, name, uid, description, due):
         self.name = name
@@ -71,36 +70,51 @@ class taskManager:
         return taskDictslist
     
     def loadTasksFromDict(self, dicts: list): # safe, as long as only called on program start
+        print(f"Loading {len(dicts)} tasks from dict")
         for taskDict in dicts:
+            print(f"Processing task: {taskDict}")
             task = Task(
                 name = taskDict["name"],
                 uid = taskDict["uid"],
                 description = taskDict["description"],
                 due = taskDict.get("due", None)
-            
             )
-            
-            
             task.status = taskDict["status"]
             self.uidCounter = max(self.uidCounter, task.uid + 1)
             self.tasks.append(task)
+            print(f"Added task: {task.name} with uid {task.uid}")
+        print(f"Total tasks in memory: {len(self.tasks)}")
 
     
     
     def dumpTasksToSave(self):
         with open("tasks.json", "w") as f:
-            json.dump(self.returnTasksAsDict(), f, default=str)
+            json.dump(self.returnTasksAsDict(), f)
         print("shoved it into a json file so that we can delete it later")
+
+    async def dumpTasksToClue(self, bt):
+            
+        await bt.send_json({"tasks": self.returnTasksAsDict()})
+
+
+
     def loadTasksFromSave(self):
         try:
             with open("tasks.json", "r") as f:
-                self.loadTasksFromDict(json.load(f))
+                data = json.load(f)
+                print(f"JSON data loaded: {data}")
+                self.loadTasksFromDict(data)
             print("loaded tasks from save file")
-        except (FileNotFoundError, json.JSONDecodeError):
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Error loading tasks: {e}")
             print("No save file found, starting fresh.")
+
+
+
+
     def deleteDuplicateTasks(self):
         try:
-            with open("tasks.json", "r") as f:
+            with open("tasks.json", "r") as f
                 dicts = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             print("No tasks file to deduplicate.")
@@ -124,10 +138,16 @@ class taskManager:
 
 taskManager = taskManager() 
 taskManager.loadTasksFromSave()
+print(f"loaded tasks: {taskManager.tasks}")
+bt = libs.bluetooth.BLEManager() 
+async def main():
+    await bt.connect()
+    await taskManager.dumpTasksToClue(bt)
+
 
 for task in taskManager.list_tasks():
     task.start() 
 taskManager.dumpTasksToSave()
 taskManager.deleteDuplicateTasks()
+asyncio.run(main())
 
-print(taskManager.taskDicts)

@@ -80,6 +80,7 @@ class BLEManager:
         try:
             json_str = json.dumps(data) + "\n"
             await self.client.write_gatt_char(UART_TX_CHAR_UUID, json_str.encode("utf-8"))
+            print("shat jason into the clue it should work")
             return True
         except Exception as e:
             print("Error sending JSON:", e)
