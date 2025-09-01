@@ -51,7 +51,7 @@ class taskManager:
                 return task
         return "Task not found"
 
-    def taskStatus(self) -> tuple:
+    def taskStatus(self) -> tuple: # returns (toDo, inProgress, Done)
         for task in self.tasks:
             if task.status == 0:
                 self.toDo += 1
