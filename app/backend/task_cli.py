@@ -1,73 +1,133 @@
-import asyncio
-import libs.bluetooth
-import libs.tasks
-import uuid
+import datetime
+import json
 
-# BLE and task manager setup
-ble = libs.bluetooth.BLEManager()
-task_manager = libs.tasks.TaskManager()
 
-# Internal helper functions
-async def sync_to_clue():
-    """Send all tasks to Clue device."""
-    await ble.connect()
-    await ble.send_json({"tasks": task_manager.sync_to_clue()})
-    await ble.disconnect()
+class Task:
+    def __init__(self, name, uid, description, due):
+        self.name = name
+        self.uid = uid 
+        self.description = description
+        self.status = 0 #0 = todo, 1 = in progress, 2 = done
+        self.due = due
+    
 
-async def sync_from_clue():
-    """Fetch all tasks from Clue device."""
-    await ble.connect()
-    await ble.send_json({"request": "tasks"})
-    await asyncio.sleep(1)
-    msg = await ble.receive_json()
-    if msg and "tasks" in msg:
-        task_manager.sync_from_clue(msg["tasks"])
-    await ble.disconnect()
 
-def print_tasks():
-    """Print all tasks in a readable format."""
-    for t in task_manager.get_tasks():
-        print(f"{t.name} | Due: {t.due_date} | Completed: {t.completed} | UID: {t.uid}")
+    def start (self):
+        self.status = 1
 
-async def interactive_cli():
-    """Interactive terminal menu for managing tasks and syncing with Clue."""
-    while True:
-        print("\n--- TASK MANAGER ---")
-        print("1. View tasks")
-        print("2. Add task")
-        print("3. Mark task completed")
-        print("4. Remove completed tasks")
-        print("5. Sync to Clue")
-        print("6. Sync from Clue")
-        print("7. Exit")
-        choice = input("Select option: ").strip()
+    def finish (self):
+        self.status = 2
 
-        if choice == "1":
-            print_tasks()
-        elif choice == "2":
-            name = input("Task name: ").strip()
-            due_date = input("Due date (YYYY-MM-DD): ").strip()
-            uid = str(uuid.uuid4())
-            task_manager.add_task(name, due_date, uid)
-            print("Task added.")
-        elif choice == "3":
-            uid = input("Enter UID of task to mark completed: ").strip()
-            task_manager.complete_task(uid)
-            print("Task marked completed.")
-        elif choice == "4":
-            task_manager.remove_completed()
-            print("Completed tasks removed.")
-        elif choice == "5":
-            await sync_to_clue()
-            print("Synced tasks to Clue.")
-        elif choice == "6":
-            await sync_from_clue()
-            print("Synced tasks from Clue.")
-        elif choice == "7":
-            print("Exiting.")
-            break
-        else:
-            print("Invalid option.")
+    def dict (self) -> dict:
+        return {
+            "name": self.name,
+            "uid": self.uid,
+            "description": self.description,
+            "status": self.status,
+            }
+    
+class taskManager:
+    def __init__(self):
+        self.tasks = []
+        self.toDo = 0
+        self.inProgress = 0
+        self.Done = 0
+        self.uidCounter = 0 
+        self.taskDicts = []
 
-if __name__ == "__main__":
-    asyncio.run(interactive_cli())
+
+    def add_task(self, name, description, due) -> Task:
+        task = Task(name, self.uidCounter, description, due)
+        self.tasks.append(task)
+        self.uidCounter += 1 
+        return task
+    
+    def list_tasks(self):
+        return self.tasks
+    
+    def get_task(self, name):
+        for task in self.tasks:
+            if task.name == name: 
+                return task
+        return "Task not found"
+
+    def taskStatus(self) -> tuple:
+        for task in self.tasks:
+            if task.status == 0:
+                self.toDo += 1
+            elif task.status == 1:
+                self.inProgress += 1
+            elif task.status == 2:
+                self.Done += 1
+            else:
+                print(f"Task '{task.name}' has an unknown status.")
+            return self.toDo, self.inProgress, self.Done
+        
+
+    def returnTasksAsDict(self):
+        taskDictslist = []
+        for task in self.tasks:
+            taskDictslist.append(task.dict())
+        return taskDictslist
+    
+    def loadTasksFromDict(self, dicts: list): # safe, as long as only called on program start
+        for taskDict in dicts:
+            task = Task(
+                name = taskDict["name"],
+                uid = taskDict["uid"],
+                description = taskDict["description"],
+                due = taskDict.get("due", None)
+            
+            )
+            
+            
+            task.status = taskDict["status"]
+            self.uidCounter = max(self.uidCounter, task.uid + 1)
+            self.tasks.append(task)
+
+    
+    
+    def dumpTasksToSave(self):
+        with open("tasks.json", "w") as f:
+            json.dump(self.returnTasksAsDict(), f, default=str)
+        print("shoved it into a json file so that we can delete it later")
+    def loadTasksFromSave(self):
+        try:
+            with open("tasks.json", "r") as f:
+                self.loadTasksFromDict(json.load(f))
+            print("loaded tasks from save file")
+        except (FileNotFoundError, json.JSONDecodeError):
+            print("No save file found, starting fresh.")
+    def deleteDuplicateTasks(self):
+        try:
+            with open("tasks.json", "r") as f:
+                dicts = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            print("No tasks file to deduplicate.")
+            return
+        
+        uniqueTasks = []
+        seen = set()
+        deletedCopies = 0
+        for taskDict in dicts: 
+            if taskDict["uid"] not in seen:
+                seen.add(taskDict["uid"])
+                uniqueTasks.append(taskDict)
+            else:
+                deletedCopies += 1
+        
+        with open("tasks.json", "w") as f:
+            json.dump(uniqueTasks, f)
+
+        print("Deleted", deletedCopies, "duplicate tasks.")
+          
+
+taskManager = taskManager() 
+taskManager.loadTasksFromSave()
+
+for task in taskManager.list_tasks():
+    task.start() 
+taskManager.dumpTasksToSave()
+taskManager.deleteDuplicateTasks()
+
+print(taskManager.taskDicts)
