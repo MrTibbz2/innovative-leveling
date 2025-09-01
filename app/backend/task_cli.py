@@ -114,7 +114,7 @@ class taskManager:
 
     def deleteDuplicateTasks(self):
         try:
-            with open("tasks.json", "r") as f
+            with open("tasks.json", "r") as f:
                 dicts = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             print("No tasks file to deduplicate.")
