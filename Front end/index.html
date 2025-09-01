@@ -1,13 +1,52 @@
+<!-- html file for the app -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My PyWebView App</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leveling System</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Innovative Leveling</h1>
-    <button onclick="showMessage()">Goon</button>
+    <div class="app-container" id="appContainer">
+        <!-- Header  -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="project-title">Innovative Leveling</h1>
+                <div class="user-logo">
+                    <img src="assets/user-logo.svg" alt="User Profile" id="userLogo">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main -->
+        <main class="main-content">
+            <!-- Diamond Progress System -->
+            <section class="progress-section">
+                <div class="diamond-container">
+                    <div class="diamond" id="diamond">
+                        <div class="diamond-border"></div>
+                    </div>
+                    <svg class="progress-diamond" width="140" height="140" viewBox="0 0 140 140">
+                        <path class="progress-diamond-background" d="M 70 10 L 130 70 L 70 130 L 10 70 Z" fill="transparent" stroke="#e9ecef" stroke-width="6"/>
+                        <path class="progress-diamond-fill" id="progressDiamond" d="M 70 10 L 130 70 L 70 130 L 10 70 Z" fill="transparent" stroke="#007bff" stroke-width="6" stroke-linecap="butt"/>
+                    </svg>
+                </div>
+                <div class="progress-display">
+                    <div class="progress-info">
+                        <span id="progressText">0 / 0 tasks completed</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tasks Section -->
+            <section class="tasks-section">
+                <h2 class="tasks-heading">Tasks</h2>
+                <div class="task-list" id="taskList">
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
