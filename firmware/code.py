@@ -1,47 +1,99 @@
 import libs.bluetooth
-
 import libs.ui
+import libs.taskManager
 from adafruit_clue import clue
+import gc
 
 ble_manager = libs.bluetooth.BLEManager()
-
+task_manager = libs.taskManager.taskManager()
 
 _last_a_state = False
+_last_b_state = False
+_current_task_index = 0
+_last_checksum = ""
 
-def check_and_switch_highlighted():
-    """
-    Checks if clue.button_a is pressed (edge detection) and switches highlighted item if so.
-    Call this in your main loop.
-    """
-    global _last_a_state
+# def checksum_dict(obj):
+#     """Compute a simple checksum of nested dicts/lists without building JSON."""
+#     checksum = 0
+#     if isinstance(obj, dict):
+#         for key in sorted(obj.keys()):
+#             checksum = (checksum + checksum_dict(key)) % 65535
+#             checksum = (checksum + checksum_dict(obj[key])) % 65535
+#     elif isinstance(obj, list):
+#         for item in obj:
+#             checksum = (checksum + checksum_dict(item)) % 65535
+#     elif isinstance(obj, (int, float, bool)):
+#         checksum = (checksum + checksum_dict(str(obj))) % 65535
+#     elif obj is None:
+#         checksum = (checksum + ord("N")) % 65535
+#     else:  # strings
+#         for c in str(obj):
+#             checksum = (checksum + ord(c)) % 65535
+#     return checksum
+
+
+def calculate_tasks_checksum():
+    checksum = len(task_manager.tasks)
+    for task in task_manager.tasks:
+        checksum += task.status
+    return checksum
+
+def check_buttons():
+    global _last_a_state, _last_b_state, _current_task_index
+    
     if clue.button_a and not _last_a_state:
-        
-        libs.ui.change_highlighted()
-        print(f"Button A pressed, switched highlighted to {libs.ui.get_highlighted()}")
+        if task_manager.tasks:
+            _current_task_index = (_current_task_index + 1) % len(task_manager.tasks)
+            print(f"Scr: {_current_task_index}")
+            return True
     _last_a_state = clue.button_a
+    
+    if clue.button_b and not _last_b_state:
+        if task_manager.tasks and _current_task_index < len(task_manager.tasks):
+            task = task_manager.tasks[_current_task_index]
+            task.status = (task.status + 1) % 3
+            print(f"{task.name} st: {task.status}")
+            return True
+    _last_b_state = clue.button_b
+    
+    return False
 
 
 
-def clue_main(): # update loop, ALMOST as slow as turtle but not quite.
-
-    last_highlight = libs.ui.get_highlighted()
-    libs.ui.show_ui(libs.ui.setup_ui())
+def clue_main():
+    global _last_checksum
+    
+    task_manager.loadTasksFromSave()
+    _last_checksum = calculate_tasks_checksum()
+    
+    libs.ui.show_ui(libs.ui.setup_ui(task_manager, _current_task_index))
+    
     while True:
         jason = ble_manager.receive_json()
         if jason is not None:
-            print("Received JSON:", jason)
-            
-        if ble_manager.check_reconnect(): libs.ui.show_ui(libs.ui.setup_ui()) 
-        prev_highlight = libs.ui.get_highlighted()
-        check_and_switch_highlighted()
-        current_highlight = libs.ui.get_highlighted()
-        if current_highlight != prev_highlight:
-            print(f"Highlight changed to {current_highlight}, redrawing UI")
-            libs.ui.show_ui(libs.ui.setup_ui()) 
-            # man i didnt know you could make a slower graphics library than turtle. 
-            # but to be fair, this has no hardware acceleration so.. and it ran out of memory ages ago.
-            # i personally think they should make the Applied computing class write their own graphics library
-            # every year for the game project, make everyone use last years shit graphics library
+            print("Rcv JSON")
+            if "tasks" in jason:
+                task_manager.loadTasksFromDict(jason["tasks"])
+                task_manager.dumpTasksToSave()
+                _last_checksum = calculate_tasks_checksum()
+        del jason
+        gc.collect() 
+        ui_changed = False
+        if ble_manager.check_reconnect():
+            ui_changed = True
+        
+        if check_buttons():
+            ui_changed = True
+        
+        current_checksum = calculate_tasks_checksum()
+        if current_checksum != _last_checksum:
+            task_manager.dumpTasksToSave()
+            _last_checksum = current_checksum
+            ui_changed = True
+        
+        if ui_changed:
+            gc.collect()
+            libs.ui.show_ui(libs.ui.setup_ui(task_manager, _current_task_index))
 
                                         
 

@@ -4,7 +4,7 @@
         {
             "label": "Copy firmware to CIRCUITPY",
             "type": "shell",
-            "command": "cp -rT firmware /run/media/mrtibbs/CIRCUITPY",
+            "command": "cd firmware && ../mpy-cross.static -march=armv7m libs/taskManager.py && ../mpy-cross.static -march=armv7m libs/bluetooth.py && ../mpy-cross.static -march=armv7m libs/ui.py && cp code.py /run/media/mrtibbs/CIRCUITPY/ && cp libs/*.mpy /run/media/mrtibbs/CIRCUITPY/libs/",
             "group": "build",
             "presentation": {
                 "reveal": "always"
