@@ -1,4 +1,32 @@
 import json
+
+
+# MAX_NVM = len(microcontroller.nvm)  # usually ~512 bytes
+
+# def save_json_to_nvm(data):
+#     """Save a dict/list as JSON in NVM."""
+#     encoded = json.dumps(data).encode("utf-8")
+#     if len(encoded) > MAX_NVM:
+#         raise ValueError(f"Data too large for NVM ({len(encoded)} > {MAX_NVM})")
+#     # Clear old data first
+#     microcontroller.nvm[0:MAX_NVM] = b"\x00" * MAX_NVM
+#     # Write new data
+#     microcontroller.nvm[0:len(encoded)] = encoded
+
+# def load_json_from_nvm():
+#     """Load JSON from NVM. Returns None if empty or invalid."""
+#     raw = bytes(microcontroller.nvm)
+#     # Find the first null byte (end of stored data)
+#     try:
+#         end = raw.index(0)
+#     except ValueError:
+#         end = len(raw)
+#     if end == 0:
+#         return None  # nothing stored
+#     try:
+#         return json.loads(raw[:end].decode("utf-8"))
+#     except Exception:
+#         return None
 class Task:
     def __init__(self, name, uid, description, due):
         self.name = name
@@ -22,7 +50,7 @@ class Task:
             "description": self.description,
             "status": self.status,
             }
-    
+
 class taskManager:
     def __init__(self):
         self.tasks = []
@@ -36,9 +64,7 @@ class taskManager:
     def add_task(self, name, description, due) -> Task:
         task = Task(name, self.uidCounter, description, due)
         self.tasks.append(task)
-        self.uidCounter += 1 
-        return task
-    
+        self.uidCounter += 1     
     def list_tasks(self):
         return self.tasks
     
@@ -86,7 +112,7 @@ class taskManager:
     
     
     def dumpTasksToSave(self):
-        with open("tasks.json", "w") as f:
+        with open("sd/tasks.json", "w") as f:
             json.dump(self.returnTasksAsDict(), f)
         print("saved tasks to file")
 
@@ -95,7 +121,7 @@ class taskManager:
 
     def loadTasksFromSave(self):
         try:
-            with open("tasks.json", "r") as f:
+            with open("sd/tasks.json", "r") as f:
                 data = json.load(f)
                 #print(f"JSON data loaded: {data}")
                 self.loadTasksFromDict(data)
@@ -109,7 +135,7 @@ class taskManager:
 
     # def deleteDuplicateTasks(self):
     #     try:
-    #         with open("tasks.json", "r") as f:
+    #         with open("sd/tasks.json", "r") as f:
     #             dicts = json.load(f)
     #     except (OSError, ValueError):
     #         print("No tasks file to deduplicate.")
@@ -125,7 +151,7 @@ class taskManager:
     #         else:
     #             deletedCopies += 1
         
-    #     with open("tasks.json", "w") as f:
+    #     with open("sd/tasks.json", "w") as f:
     #         json.dump(uniqueTasks, f)
 
     #     print("Deleted", deletedCopies, "duplicate tasks.")

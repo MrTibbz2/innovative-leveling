@@ -8,8 +8,8 @@ async def main():
 	await ble.connect()
 
 	# Send a test JSON packet
-	await ble.send_json({"hello": "from PC"})
-
+	await ble.send_json({"command": "add_task", "name": "Test Task", "description": "This is a test", "due": "2024-12-31"})
+	
 	# Keep running to receive notifications
 	while True:
 		msg = await ble.receive_json()

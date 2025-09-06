@@ -3,7 +3,6 @@ import libs.ui
 import libs.taskManager
 from adafruit_clue import clue
 import gc
-
 ble_manager = libs.bluetooth.BLEManager()
 task_manager = libs.taskManager.taskManager()
 
@@ -30,7 +29,7 @@ _last_checksum = ""
 #         for c in str(obj):
 #             checksum = (checksum + ord(c)) % 65535
 #     return checksum
-
+# libs.taskManager.save_json_to_nvm({"yay": "hi"})
 
 def calculate_tasks_checksum():
     checksum = len(task_manager.tasks)
@@ -67,16 +66,10 @@ def clue_main():
     _last_checksum = calculate_tasks_checksum()
     
     libs.ui.show_ui(libs.ui.setup_ui(task_manager, _current_task_index))
-    
+    commands = libs.bluetooth.Commands(task_manager, ble_manager)
     while True:
-        jason = ble_manager.receive_json()
-        if jason is not None:
-            print("Rcv JSON")
-            if "tasks" in jason:
-                task_manager.loadTasksFromDict(jason["tasks"])
-                task_manager.dumpTasksToSave()
-                _last_checksum = calculate_tasks_checksum()
-        del jason
+        gc.collect()
+        commands.check_commands()
         gc.collect() 
         ui_changed = False
         if ble_manager.check_reconnect():
