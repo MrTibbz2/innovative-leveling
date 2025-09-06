@@ -1,3 +1,6 @@
+# 2025 Lachlan McKenna
+# UI for displaying all tasks and statuses on the Adafruit Clue
+
 import displayio, terminalio
 from board import DISPLAY
 from adafruit_display_text import label

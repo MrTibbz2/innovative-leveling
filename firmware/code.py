@@ -1,3 +1,6 @@
+# 2025 Lachlan McKenna
+# main clue entry point
+
 import libs.bluetooth
 import libs.ui
 import libs.taskManager

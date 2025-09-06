@@ -1,3 +1,9 @@
+# 2025 Lachlan McKenna. 
+# driver for bluetooth communication with the clue from a PC
+# uses bleak for cross platform bluetooth support   
+# some small parts of code written using AI. please treat with caution and test thoroughly.
+
+
 import asyncio
 import json
 from bleak import BleakClient, BleakScanner

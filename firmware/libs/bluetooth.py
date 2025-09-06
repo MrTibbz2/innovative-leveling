@@ -1,3 +1,7 @@
+# 2025 Lachlan McKenna 
+# interface for bluetooth communication with the clue
+
+
 import json
 from adafruit_ble import BLERadio
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
@@ -33,7 +37,6 @@ class BLEManager:
         ble_is_connected = self.ble.connected
         if ble_is_connected:
             if not self.connected:
-                # amazonq-ignore-next-line
                 print("Connected!")
                 switch_bluetooth_status_indicator(True)
                 reload_ui = True
@@ -69,7 +72,7 @@ class BLEManager:
             return None
         try:
             while self.uart_service.in_waiting:
-                # amazonq-ignore-next-line
+
                 raw = self.uart_service.read(self.uart_service.in_waiting).decode("utf-8")
                 self.receive_buffer += raw
 
@@ -77,7 +80,7 @@ class BLEManager:
             if "\n" in self.receive_buffer:
                 line, self.receive_buffer = self.receive_buffer.split("\n", 1)
                 if line.strip():
-                    # amazonq-ignore-next-line
+
                     return json.loads(line)
         except Exception as e:
             print("Error receiving JSON:", e)
@@ -97,32 +100,56 @@ class Commands:
         self.task_manager.add_task(name, description, due)
         print(f"Task added")
     def deleteTask(self, tasks_uid):
+        print(f"Attempting to delete task with uid: {tasks_uid} (type: {type(tasks_uid)})")
+        # Convert string to int since UIDs are integers
+        try:
+            uid_int = int(tasks_uid)
+        except ValueError:
+            print(f"Invalid uid format: {tasks_uid}")
+            return
+            
         for task in self.task_manager.tasks:
-            if task.uid == tasks_uid:
+            print(f"Checking task uid {task.uid} (type: {type(task.uid)}) against {uid_int}")
+            if task.uid == uid_int:
+                print(f"Found matching task, deleting: {task.name}")
                 self.task_manager.tasks.remove(task)
                 return
+        print(f"No task found with uid: {uid_int}")
     def getTasks(self):
-        result = self.ble_manager.send_json({"tasks": self.task_manager.tasks})
+        tasks_dict = self.task_manager.returnTasksAsDict()
+        print(f"Sending {len(tasks_dict)} tasks: {tasks_dict}")
+        result = self.ble_manager.send_json({"tasks": tasks_dict})
         if result:
-            print("Tasks sent")
+            print("Tasks sent successfully")
         else: 
-            print("Fail send tasks")
+            print("Failed to send tasks")
 
     def check_commands(self): # chcecks the json buffer for incoming commands
         command = self.ble_manager.receive_json()
         if command:
-            print("command recv")
-            if command["command"] == self.ADD_TASK:
+            print(f"Command received: {command}")
+            cmd = command["command"]
+            print(f"Command type: '{cmd}', ADD_TASK: '{self.ADD_TASK}', DELETE_TASK: '{self.DELETE_TASK}', GET_TASKS: '{self.GET_TASKS}'")
+            
+            if cmd == self.ADD_TASK:
+                print("Matched ADD_TASK")
                 self.addTask(command["name"], command["description"], command["due"])
-            elif command["command"] == self.DELETE_TASK:
+            elif cmd == self.DELETE_TASK:
+                print("Matched DELETE_TASK")
                 self.deleteTask(command["uid"])
-            elif command["command"] == self.GET_TASKS:
+            elif cmd == self.GET_TASKS:
+                print("Matched GET_TASKS")
                 self.getTasks()
             else:
-                print("Unknown command")
+                print(f"No match for command: '{cmd}'")
                 self.ble_manager.send_json({"error": "Unknown command"})
-        else:
-            pass
+        # No else clause - don't spam logs when no command
+
+
+    
+            
+    
+        # No else clause - don't spam logs when no command
 
 
     

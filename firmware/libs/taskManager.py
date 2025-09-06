@@ -1,3 +1,7 @@
+# 2025. orgigionally written by Charlie Tate, Refactored by Lachlan McKenna
+# code for managing tasks on the clue
+
+
 import json
 
 
@@ -49,6 +53,7 @@ class Task:
             "uid": self.uid,
             "description": self.description,
             "status": self.status,
+            "due": self.due
             }
 
 class taskManager:
@@ -90,7 +95,10 @@ class taskManager:
     def returnTasksAsDict(self):
         taskDictslist = []
         for task in self.tasks:
-            taskDictslist.append(task.dict())
+            task_dict = task.dict()
+            print(f"Converting task to dict: {task_dict}")
+            taskDictslist.append(task_dict)
+        print(f"Final task list: {taskDictslist}")
         return taskDictslist
     
     def loadTasksFromDict(self, dicts: list): # safe, as long as only called on program start

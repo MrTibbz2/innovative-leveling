@@ -1,3 +1,7 @@
+# 2025 Charlie Tate.
+# legacy code for managing local tasks and dumping/loading them to/from a json file + clue.
+# deprecated in favour of putting tasks on the clue directly.
+
 import json
 import libs.bluetooth 
 import asyncio
@@ -137,17 +141,13 @@ class taskManager:
           
 
 taskManager = taskManager() 
-taskManager.loadTasksFromSave()
-print(f"loaded tasks: {taskManager.tasks}")
+
 bt = libs.bluetooth.BLEManager() 
 async def main():
     await bt.connect()
-    await taskManager.dumpTasksToClue(bt)
 
 
-for task in taskManager.list_tasks():
-    task.start() 
-taskManager.dumpTasksToSave()
-taskManager.deleteDuplicateTasks()
+
+
 asyncio.run(main())
 

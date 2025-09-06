@@ -14,3 +14,7 @@ keep it simple.
 - send data in json, none of this data seperated by dots in floating strings garbage 
 - 
 
+structure for comms:
+
+- clue stores all the data for tasks
+- app simply takes that and displays it as well as giving a ui to interact, add delete tasks and add leveling. 
